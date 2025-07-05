@@ -107,11 +107,11 @@ This project demonstrates how to set up a MySQL database, populate it with user 
 
 - From `1-main.py` (single user stream):
 
-        ```bash
-        ('b123...', 'Alice Smith', 'alice@example.com', 35)
-        ('c456...', 'Bob Johnson', 'bob@example.com', 42)
-        ...
-        ```
+    ```bash
+    ('b123...', 'Alice Smith', 'alice@example.com', 35)
+    ('c456...', 'Bob Johnson', 'bob@example.com', 42)
+    ...
+    ```
 
 - From `2-main.py` (filtered batch as dictionaries):
 
