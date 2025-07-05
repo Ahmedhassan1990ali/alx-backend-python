@@ -4,14 +4,14 @@ This project demonstrates how to set up a MySQL database, populate it with user 
 
 ## 📁 Project Structure
 
-- `0-main.py`  
+- ### `0-main.py`  
   Main setup script that:
   - Connects to MySQL
   - Creates the `ALX_prodev` database and `user_data` table (if not already existing)
   - Loads user data from `user_data.csv`
   - Confirms setup and prints the first 5 rows
 
-- `seed.py`  
+- ### `seed.py`  
   Helper module that provides:
   - `connect_db()` – Connects to MySQL server
   - `create_database(connection)` – Creates the `ALX_prodev` database
@@ -19,31 +19,37 @@ This project demonstrates how to set up a MySQL database, populate it with user 
   - `create_table(connection)` – Creates the `user_data` table
   - `insert_data(connection, csv_file)` – Loads data from the CSV file into the table
 
-- `user_data.csv`  
+- ### `user_data.csv`  
   A CSV file containing user records with UUID, name, email, and age fields.
 
-- `0-stream_users.py`  
+- ### `0-stream_users.py`  
   Contains a generator function:
   - `stream_users()` – Connects to the database and yields rows one by one using a single loop and `yield`.
 
-- `1-main.py`  
+- ### `1-main.py`  
   Test script that uses `islice()` to print the **first 6 user records** streamed from the database using the `stream_users()` generator.
 
-- `1-batch_processing.py`  
+- ### `1-batch_processing.py`  
   Implements batch logic using generators:
   - `stream_users_in_batches(batch_size)` – Yields users in chunks using `fetchmany()`
   - `batch_processing(batch_size)` – Filters and prints users with age > 25
 
-- `2-main.py`  
+- ### `2-main.py`  
   Test script that runs `batch_processing(50)` and prints filtered user records (as dictionaries)
 
-- `2-lazy_paginate.py`  
+- ### `2-lazy_paginate.py`  
   Implements:
   - `paginate_users(page_size, offset)` – Fetches one page of users from the DB
   - `lazy_pagination(page_size)` – Generator that lazily yields one page at a time using a single loop
 
-- `3-main.py`  
+- ### `3-main.py`  
   Test script that prints paginated users in batches using `lazy_pagination(100)`
+
+- ### `4-stream_ages.py`  
+  Implements:
+  - `stream_user_ages()` – Generator that yields one user age at a time from the DB
+  - `calculate_average_age()` – Computes the average age efficiently without using SQL AVG()
+
 
 
 ## 💡 Prerequisites
@@ -90,6 +96,13 @@ This project demonstrates how to set up a MySQL database, populate it with user 
     ./3-main.py | head -n 7
     ```
 
+7. Compute average user age (memory-efficient with generator):
+
+    ```bash
+    chmod +x 4-stream_ages.py
+    ./4-stream_ages.py
+    ```
+
 ## ✅ Example Output
 
 - From `1-main.py` (single user stream):
@@ -114,6 +127,12 @@ This project demonstrates how to set up a MySQL database, populate it with user 
     ```bash
     {'user_id': '...', 'name': 'Alice', 'email': 'alice@example.com', 'age': 35}
     ...
+    ```
+
+- From `4-stream_ages.py` (average age):
+
+    ```bash
+    Average age of users: 58.23
     ```
 
 
