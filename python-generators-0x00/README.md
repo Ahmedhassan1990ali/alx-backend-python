@@ -37,6 +37,14 @@ This project demonstrates how to set up a MySQL database, populate it with user 
 - `2-main.py`  
   Test script that runs `batch_processing(50)` and prints filtered user records (as dictionaries)
 
+- `2-lazy_paginate.py`  
+  Implements:
+  - `paginate_users(page_size, offset)` – Fetches one page of users from the DB
+  - `lazy_pagination(page_size)` – Generator that lazily yields one page at a time using a single loop
+
+- `3-main.py`  
+  Test script that prints paginated users in batches using `lazy_pagination(100)`
+
 
 ## 💡 Prerequisites
 
@@ -75,26 +83,40 @@ This project demonstrates how to set up a MySQL database, populate it with user 
    chmod +x 2-main.py
    ./2-main.py | head -n 5
    ```
+6. Run lazy pagination (fetches one page at a time):
+
+    ```bash
+    chmod +x 3-main.py
+    ./3-main.py | head -n 7
+    ```
 
 ## ✅ Example Output
 
-From `1-main.py` (single user stream)
+- From `1-main.py` (single user stream):
 
-```bash
-('b123...', 'Alice Smith', 'alice@example.com', 35)
-('c456...', 'Bob Johnson', 'bob@example.com', 42)
-...
-```
+        ```bash
+        ('b123...', 'Alice Smith', 'alice@example.com', 35)
+        ('c456...', 'Bob Johnson', 'bob@example.com', 42)
+        ...
+        ```
 
-From `2-main.py` (filtered batch as dictionaries):
+- From `2-main.py` (filtered batch as dictionaries):
 
-```bash
-{'user_id': '00234e50-34eb-4ce2-94ec-26e3fa749796', 'name': 'Dan Altenwerth Jr.', 'email': 'Molly59@gmail.com', 'age': 67}
-{'user_id': '006bfede-724d-4cdd-a2a6-59700f40d0da', 'name': 'Glenda Wisozk', 'email': 'Miriam21@gmail.com', 'age': 119}
-...
-```
+    ```bash
+    {'user_id': '00234e50-34eb-4ce2-94ec-26e3fa749796', 'name': 'Dan Altenwerth Jr.', 'email': 'Molly59@gmail.com', 'age': 67}
+    {'user_id': '006bfede-724d-4cdd-a2a6-59700f40d0da', 'name': 'Glenda Wisozk', 'email': 'Miriam21@gmail.com', 'age': 119}
+    ...
+    ```
 
-This confirms the generator is yielding user data one row at a time from the database.
+
+- From `3-main.py` (lazy pagination output):
+
+    ```bash
+    {'user_id': '...', 'name': 'Alice', 'email': 'alice@example.com', 'age': 35}
+    ...
+    ```
+
+
 
 
 
