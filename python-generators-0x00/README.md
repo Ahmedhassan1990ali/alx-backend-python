@@ -29,6 +29,15 @@ This project demonstrates how to set up a MySQL database, populate it with user 
 - `1-main.py`  
   Test script that uses `islice()` to print the **first 6 user records** streamed from the database using the `stream_users()` generator.
 
+- `1-batch_processing.py`  
+  Implements batch logic using generators:
+  - `stream_users_in_batches(batch_size)` – Yields users in chunks using `fetchmany()`
+  - `batch_processing(batch_size)` – Filters and prints users with age > 25
+
+- `2-main.py`  
+  Test script that runs `batch_processing(50)` and prints filtered user records (as dictionaries)
+
+
 ## 💡 Prerequisites
 
 - Python 3
@@ -60,7 +69,16 @@ This project demonstrates how to set up a MySQL database, populate it with user 
    ./1-main.py
    ```
 
+5. Run batch processing (filters users over age 25):
+
+   ```bash
+   chmod +x 2-main.py
+   ./2-main.py | head -n 5
+   ```
+
 ## ✅ Example Output
+
+From `1-main.py` (single user stream)
 
 ```bash
 ('b123...', 'Alice Smith', 'alice@example.com', 35)
@@ -68,6 +86,26 @@ This project demonstrates how to set up a MySQL database, populate it with user 
 ...
 ```
 
+From `2-main.py` (filtered batch as dictionaries):
+
+```bash
+{'user_id': '00234e50-34eb-4ce2-94ec-26e3fa749796', 'name': 'Dan Altenwerth Jr.', 'email': 'Molly59@gmail.com', 'age': 67}
+{'user_id': '006bfede-724d-4cdd-a2a6-59700f40d0da', 'name': 'Glenda Wisozk', 'email': 'Miriam21@gmail.com', 'age': 119}
+...
+```
+
 This confirms the generator is yielding user data one row at a time from the database.
+
+
+
+
+
+
+
+
+
+
+
+
 
 
