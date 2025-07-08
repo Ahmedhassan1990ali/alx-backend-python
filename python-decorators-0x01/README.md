@@ -20,6 +20,11 @@ This project introduces the use of **Python decorators** to log SQL queries exec
   - `with_db_connection()` – Opens and closes the SQLite connection automatically.
   - `transactional()` – Wraps function logic in a transaction. Automatically commits if successful, rolls back if an exception occurs.
   - Demonstrates usage with `update_user_email(user_id, new_email)` which updates a user's email.
+- ### `3-retry_on_failure.py`  
+  Implements:
+  - `retry_on_failure(retries=3, delay=1)` – A decorator that retries a database operation up to a specified number of times if it raises an exception.
+  - Reuses `with_db_connection()` to manage SQLite connections.
+  - Demonstrates usage with `fetch_users_with_retry()`, which fetches all users and retries up to 3 times if it fails.
 
 ## 💡 Prerequisites
 
@@ -53,6 +58,13 @@ This project introduces the use of **Python decorators** to log SQL queries exec
    ./2-transactional.py
    ```
 
+5. Run the retrying fetch script:
+
+   ```bash
+   chmod +x 3-retry_on_failure.py
+   ./3-retry_on_failure.py
+   ```
+
 ## ✅ Example Output
 
 * From `0-log_queries.py` (printed result and log):
@@ -84,6 +96,24 @@ This project introduces the use of **Python decorators** to log SQL queries exec
       ...
     ```
 
+* From `3-retry_on_failure.py` (auto-retry on failure):
+
+  - ✅ If table exists and query works:
+
+    ```bash
+    [('1', 'Alice Smith', 'alice@example.com', 35), ('2', 'Bob Johnson', 'bob@example.com', 42)]
+    ```
+
+  - ❌ If table is missing or fails temporarily:
+
+    ```bash
+    [RETRY 1] Failed with error: no such table: users
+    [RETRY 2] Failed with error: no such table: users
+    [RETRY 3] Failed with error: no such table: users
+    [GIVE UP] Max retries reached.
+    Traceback (most recent call last):
+      ...
+    ```
 
 
 
