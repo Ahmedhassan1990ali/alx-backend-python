@@ -15,7 +15,11 @@ This project introduces the use of **Python decorators** to log SQL queries exec
   - `with_db_connection()` – Opens a connection to `users.db`, passes it to the decorated function, and ensures it's closed after execution.
   - Demonstrates usage with `get_user_by_id(user_id)`, which retrieves a single user record from the database by ID.
   - Helps eliminate repetitive connection handling logic and reduces boilerplate code.
-
+- ### `2-transactional.py`  
+  Implements two decorators:
+  - `with_db_connection()` – Opens and closes the SQLite connection automatically.
+  - `transactional()` – Wraps function logic in a transaction. Automatically commits if successful, rolls back if an exception occurs.
+  - Demonstrates usage with `update_user_email(user_id, new_email)` which updates a user's email.
 
 ## 💡 Prerequisites
 
@@ -42,6 +46,13 @@ This project introduces the use of **Python decorators** to log SQL queries exec
    ./1-with_db_connection.py
    ```
 
+4. Run the transaction-handling script:
+
+   ```bash
+   chmod +x 2-transactional.py
+   ./2-transactional.py
+   ```
+
 ## ✅ Example Output
 
 * From `0-log_queries.py` (printed result and log):
@@ -56,6 +67,23 @@ This project introduces the use of **Python decorators** to log SQL queries exec
   ```bash
   ('1', 'Alice Smith', 'alice@example.com', 35)
   ```
+
+* From `2-transactional.py` (transactional email update):
+
+  - ✅ If the user exists and the update succeeds:
+
+    ```bash
+    (no output — transaction committed silently)
+    ```
+
+  - ❌ If the table `users` doesn't exist or the ID is invalid:
+
+    ```bash
+    [ERROR] Transaction failed: no such table: users
+    Traceback (most recent call last):
+      ...
+    ```
+
 
 
 
