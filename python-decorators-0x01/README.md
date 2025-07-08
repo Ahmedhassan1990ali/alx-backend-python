@@ -25,6 +25,12 @@ This project introduces the use of **Python decorators** to log SQL queries exec
   - `retry_on_failure(retries=3, delay=1)` – A decorator that retries a database operation up to a specified number of times if it raises an exception.
   - Reuses `with_db_connection()` to manage SQLite connections.
   - Demonstrates usage with `fetch_users_with_retry()`, which fetches all users and retries up to 3 times if it fails.
+- ### `4-cache_query.py`  
+  Implements:
+  - `cache_query()` – Caches the result of a SQL query based on the query string to avoid redundant DB calls.
+  - Reuses `with_db_connection()` for DB access.
+  - Demonstrates usage with `fetch_users_with_cache(query)`.
+  - Uses an in-memory dictionary (`query_cache`) for caching results across repeated calls.
 
 ## 💡 Prerequisites
 
@@ -63,6 +69,13 @@ This project introduces the use of **Python decorators** to log SQL queries exec
    ```bash
    chmod +x 3-retry_on_failure.py
    ./3-retry_on_failure.py
+   ```
+
+6. Run the caching query script:
+
+   ```bash
+   chmod +x 4-cache_query.py
+   ./4-cache_query.py
    ```
 
 ## ✅ Example Output
@@ -115,9 +128,10 @@ This project introduces the use of **Python decorators** to log SQL queries exec
       ...
     ```
 
+* From `4-cache_query.py` (first call hits DB, second call uses cache):
 
-
-
-
-
-
+  ```bash
+  [CACHE MISS] Executing and caching result.
+  [CACHE HIT] Returning cached result.
+  [('1', 'Alice Smith', 'alice@example.com', 35), ('2', 'Bob Johnson', 'bob@example.com', 42)]
+  ```
