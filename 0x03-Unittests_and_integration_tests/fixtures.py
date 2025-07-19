@@ -1,5 +1,23 @@
 #!/usr/bin/env python3
 
+org_payload = {
+    "login": "my-org",
+    "id": 1,
+    "url": "https://api.github.com/orgs/my-org"
+}
+
+repos_payload = [
+    {"id": 1, "name": "repo1"},
+    {"id": 2, "name": "repo2"}
+]
+
+expected_repos = ["repo1", "repo2"]
+
+apache2_repos = [
+    {"id": 3, "name": "httpd"},
+    {"id": 4, "name": "subversion"}
+]
+
 TEST_PAYLOAD = [
   (
     {"repos_url": "https://api.github.com/orgs/google/repos"},
