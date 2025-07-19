@@ -66,23 +66,55 @@ REPOS_PAYLOAD_WITH_LICENSE = [
 
 ## 🧪 Testing Files
 
-### `test_utils.py`
+### 🧪 `test_utils.py` - Unit Tests for `utils.py`
 
-Unit tests for `utils.py`, covering:
+* **`access_nested_map`**:
 
-* `access_nested_map` using `@parameterized.expand`
-* `get_json` using `mock`
-* `memoize` by mocking method calls and checking caching
+  * Tested with valid and invalid nested keys.
+  * Exception handling tested with `KeyError`.
+* **`get_json`**:
 
-### `test_client.py`
+  * Mocked `requests.get` to return specific JSON payloads.
+* **`memoize` decorator**:
 
-Tests for `GithubOrgClient`:
+  * Ensures that a method is only called once and results are cached properly.
 
-* Org and repos URL fetching
-* `public_repos()` return value
-* License filtering
-* Mocks `requests.get` and `utils.get_json`
-* Uses fixtures from `fixtures.py`
+---
+
+### 🧪 `test_client.py` - Unit & Integration Tests for `GithubOrgClient`
+
+#### ✅ Unit Tests
+
+Tested methods from `GithubOrgClient`:
+
+* **`org`**
+
+  * Uses `@parameterized.expand` to test multiple org names.
+  * Verifies `get_json` is called once with correct URL.
+* **`_public_repos_url`**
+
+  * Checks that the correct `repos_url` is returned from the mocked org payload.
+* **`public_repos()`**
+
+  * Mocks `_public_repos_url` and `get_json` to test repo name extraction.
+* **`has_license()`**
+
+  * Static method that checks if a repo has a given license.
+  * Tested with matching and non-matching licenses.
+
+#### 🧩 Integration Tests
+
+Using `@parameterized_class` and `fixtures.py`:
+
+* **Setup**
+
+  * `setUpClass`: Patches `requests.get` and uses a `side_effect` to return different mocked JSON depending on the requested URL.
+  * `tearDownClass`: Stops patching.
+* **Tests**
+
+  * `test_public_repos()`: Validates `public_repos()` returns full expected repo list from fixtures.
+  * `test_public_repos_with_license()`: Validates filtering repos by `license="apache-2.0"` returns correct subset.
+
 
 ---
 
@@ -110,3 +142,18 @@ python3 -m unittest discover
 ```
 
 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
