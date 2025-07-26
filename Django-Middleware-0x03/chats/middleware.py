@@ -77,3 +77,40 @@ class OffensiveLanguageMiddleware:
     def get_client_ip(self, request):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         return x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+
+class RolepermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.admin_paths = [
+            '/api/admin/',
+            '/api/conversations/delete/',
+            '/api/users/'
+        ]
+        self.moderator_paths = [
+            '/api/messages/delete/',
+            '/api/reports/'
+        ]
+
+    def __call__(self, request):
+        # Skip for non-protected paths
+        if not any(
+            request.path.startswith(path) 
+            for path in self.admin_paths + self.moderator_paths
+        ):
+            return self.get_response(request)
+
+        # Check authentication
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden("Authentication required")
+
+        # Admin-only paths
+        if any(request.path.startswith(path) for path in self.admin_paths):
+            if request.user.role != 'admin':
+                return HttpResponseForbidden("Admin privileges required")
+
+        # Moderator paths (moderator or admin)
+        if any(request.path.startswith(path) for path in self.moderator_paths):
+            if request.user.role not in ['admin', 'moderator']:
+                return HttpResponseForbidden("Moderator privileges required")
+
+        return self.get_response(request)
