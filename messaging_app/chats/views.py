@@ -1,9 +1,10 @@
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, status, filters, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import authenticate
 from .auth import get_tokens_for_user
+from .permissions import IsParticipantOfConversation
 from .models import Conversation, Message
 from .serializers import (
     ConversationSerializer,
@@ -29,6 +30,7 @@ def jwt_login(request):
     return Response(tokens, status=status.HTTP_200_OK)
 
 class ConversationViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsParticipantOfConversation]
     queryset = Conversation.objects.prefetch_related('participants', 'messages').all()
     serializer_class = ConversationSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
@@ -44,6 +46,11 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def send_message(self, request, pk=None):
         conversation = self.get_object()
+        if not conversation.participants.filter(id=request.user.id).exists():
+            return Response(
+                {"detail": "You are not a participant in this conversation"},
+                status=status.HTTP_403_FORBIDDEN
+            )
         serializer = MessageCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -59,6 +66,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         )
 
 class MessageViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsParticipantOfConversation]
     serializer_class = MessageSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['sender__id', 'sent_at']
