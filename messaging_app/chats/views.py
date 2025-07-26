@@ -12,6 +12,8 @@ from .serializers import (
     ConversationCreateSerializer,
     MessageCreateSerializer
 )
+from .filters import MessageFilter
+from .pagination import MessagePagination
 
 @api_view(['POST'])
 def jwt_login(request):
@@ -71,6 +73,8 @@ class MessageViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['sender__id', 'sent_at']
     ordering_fields = ['sent_at']
+    filterset_class = MessageFilter
+    pagination_class = MessagePagination
 
     def get_queryset(self):
         conversation_id = self.kwargs['conversation_pk']
