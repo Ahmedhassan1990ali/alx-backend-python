@@ -1,7 +1,9 @@
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth import authenticate
+from .auth import get_tokens_for_user
 from .models import Conversation, Message
 from .serializers import (
     ConversationSerializer,
@@ -9,6 +11,22 @@ from .serializers import (
     ConversationCreateSerializer,
     MessageCreateSerializer
 )
+
+@api_view(['POST'])
+def jwt_login(request):
+    """Custom JWT login using email/password"""
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
+    user = authenticate(email=email, password=password)
+    if not user:
+        return Response(
+            {"detail": "Invalid credentials"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+        
+    tokens = get_tokens_for_user(user)
+    return Response(tokens, status=status.HTTP_200_OK)
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.prefetch_related('participants', 'messages').all()
