@@ -1,25 +1,9 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Prefetch
+from .managers import MessageManager, UnreadMessagesManager
 
 User = get_user_model()
-
-class MessageManager(models.Manager):
-    def get_user_conversations(self, user):
-        """Optimized query for user's conversations"""
-        return self.filter(
-            Q(sender=user) | Q(receiver=user),
-            parent_message__isnull=True
-        ).select_related(
-            'sender', 'receiver'
-        ).prefetch_related(
-            Prefetch(
-                'replies',
-                queryset=Message.objects.select_related(
-                    'sender', 'receiver'
-                ).order_by('timestamp')
-            )
-        ).order_by('-timestamp')
 
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
@@ -43,12 +27,14 @@ class Message(models.Model):
         indexes = [
             models.Index(fields=['parent_message']),
             models.Index(fields=['sender', 'receiver']),
+            models.Index(fields=['receiver', 'is_read']),
         ]
 
     def __str__(self):
         return f"Message from {self.sender} to {self.receiver}"
 
     objects = MessageManager()  # Custom manager
+    unread = UnreadMessagesManager() # Custom manager for unread messages
     
     def get_thread(self):
         """Get complete thread with optimized queries"""
