@@ -5,6 +5,9 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.views import View
 from .models import Message
 
 User = get_user_model()
@@ -93,3 +96,23 @@ def unread_messages_api(request):
     }
     
     return JsonResponse(response_data)
+
+@login_required
+@cache_page(60)  # Cache for 60 seconds
+def cached_thread_view(request, thread_id):
+    messages = Message.objects.filter(
+        thread_id=thread_id
+    ).select_related('sender').order_by('timestamp')
+    
+    data = {
+        'messages': [
+            {
+                'id': msg.id,
+                'sender': msg.sender.username,
+                'content': msg.content,
+                'timestamp': msg.timestamp.isoformat()
+            }
+            for msg in messages
+        ]
+    }
+    return JsonResponse(data)
