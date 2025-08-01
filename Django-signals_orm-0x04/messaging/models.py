@@ -21,7 +21,7 @@ class MessageHistory(models.Model):
     content = models.TextField()
     edited_at = models.DateTimeField(auto_now_add=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-
+    
     class Meta:
         ordering = ['-edited_at']
         verbose_name_plural = 'Message Histories'
