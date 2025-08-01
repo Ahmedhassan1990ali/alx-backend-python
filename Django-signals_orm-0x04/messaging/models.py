@@ -1,7 +1,25 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import Q, Prefetch
 
 User = get_user_model()
+
+class MessageManager(models.Manager):
+    def get_user_conversations(self, user):
+        """Optimized query for user's conversations"""
+        return self.filter(
+            Q(sender=user) | Q(receiver=user),
+            parent_message__isnull=True
+        ).select_related(
+            'sender', 'receiver'
+        ).prefetch_related(
+            Prefetch(
+                'replies',
+                queryset=Message.objects.select_related(
+                    'sender', 'receiver'
+                ).order_by('timestamp')
+            )
+        ).order_by('-timestamp')
 
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
@@ -9,12 +27,36 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    parent_message = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies'
+    )
     edited = models.BooleanField(default=False)
     last_edited = models.DateTimeField(null=True, blank=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='edited_messages')
 
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['parent_message']),
+            models.Index(fields=['sender', 'receiver']),
+        ]
+
     def __str__(self):
         return f"Message from {self.sender} to {self.receiver}"
+
+    objects = MessageManager()  # Custom manager
+    
+    def get_thread(self):
+        """Get complete thread with optimized queries"""
+        return Message.objects.filter(
+            Q(id=self.id) | Q(parent_message=self.id)
+        ).select_related(
+            'sender', 'receiver', 'edited_by'
+        ).order_by('timestamp')
 
 class MessageHistory(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='history')
