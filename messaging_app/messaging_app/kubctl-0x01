@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# kubctl-0x01 - Script to scale Django app in Kubernetes and test performance
+
+# Scale the deployment to 3 replicas
+echo "Scaling django-messaging-app deployment to 3 replicas..."
+kubectl scale deployment django-messaging-app --replicas=3
+
+# Verify the pods are running
+echo -e "\nVerifying pods..."
+kubectl get pods -l app=django-messaging
+
+# Wait for all pods to be ready
+echo -e "\nWaiting for all pods to be ready..."
+kubectl wait --for=condition=Ready pods -l app=django-messaging --timeout=120s
+
+# Get the ClusterIP service details
+SERVICE_IP=$(kubectl get svc django-messaging-service -o jsonpath='{.spec.clusterIP}')
+SERVICE_PORT=$(kubectl get svc django-messaging-service -o jsonpath='{.spec.ports[0].port}')
+
+# Perform load testing (requires wrk installed)
+echo -e "\nStarting load testing with wrk..."
+kubectl run wrk -it --rm --image=williamyeh/wrk --restart=Never -- \
+  wrk -t4 -c100 -d30s http://${SERVICE_IP}:${SERVICE_PORT}
+
+# Monitor resource usage
+echo -e "\nMonitoring resource usage..."
+kubectl top pods -l app=django-messaging
+
+echo -e "\nScaling and testing complete!"
