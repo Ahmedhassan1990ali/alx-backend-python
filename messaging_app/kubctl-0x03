@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Rolling update script for Kubernetes deployment
+
+# Apply the updated deployment
+echo "Applying rolling update with new image version..."
+kubectl apply -f blue_deployment.yaml
+
+# Monitor rollout status in background
+kubectl rollout status deployment/django-blue --watch &
+ROLLOUT_PID=$!
+
+# Continuous curl test during update
+echo -e "\nStarting continuous availability test..."
+SERVICE_URL=$(kubectl get svc django-main-service -o jsonpath='{.spec.clusterIP}'):8000
+echo "Testing service at $SERVICE_URL"
+
+# Run curl tests in parallel with rollout
+for i in {1..30}; do
+  if ! curl -s --connect-timeout 2 "http://$SERVICE_URL/health/" >/dev/null; then
+    echo "[$(date +%T)] Request failed during update!"
+  else
+    echo "[$(date +%T)] Request succeeded"
+  fi
+  sleep 2
+done
+
+# Wait for rollout to complete
+wait $ROLLOUT_PID
+
+# Verify update completion
+echo -e "\nRollout complete. Current pods:"
+kubectl get pods -l version=blue
+
+echo -e "\nUpdate summary:"
+kubectl get deployments -o wide
+kubectl rollout history deployment/django-blue

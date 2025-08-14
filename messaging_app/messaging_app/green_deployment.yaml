@@ -19,6 +19,6 @@ spec:
     spec:
       containers:
       - name: django-app
-        image: your-username/django-app:v2  # Green version image
+        image: ahmedhassan1990ali/django-app:v2  # Green version image
         ports:
         - containerPort: 8000
