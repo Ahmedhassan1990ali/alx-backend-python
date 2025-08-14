@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# kurbeScript - Kubernetes local cluster setup and verification script
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Function to install minikube
+install_minikube() {
+    echo "Installing Minikube..."
+    
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux installation
+        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        sudo install minikube-linux-amd64 /usr/local/bin/minikube
+        rm minikube-linux-amd64
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS installation
+        brew install minikube
+    else
+        echo "Unsupported OS. Please install Minikube manually."
+        exit 1
+    fi
+}
+
+# Function to install kubectl
+install_kubectl() {
+    echo "Installing kubectl..."
+    
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux installation
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        rm kubectl
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS installation
+        brew install kubectl
+    else
+        echo "Unsupported OS. Please install kubectl manually."
+        exit 1
+    fi
+}
+
+# Check if Minikube is installed
+if ! command_exists minikube; then
+    echo "Minikube not found. Installing..."
+    install_minikube
+fi
+
+# Check if kubectl is installed
+if ! command_exists kubectl; then
+    echo "kubectl not found. Installing..."
+    install_kubectl
+fi
+
+# Start Minikube cluster
+echo "Starting Minikube cluster..."
+minikube start
+
+# Verify cluster is running
+echo "Verifying cluster status..."
+kubectl cluster-info
+
+# Get available pods in all namespaces
+echo "Retrieving available pods..."
+kubectl get pods --all-namespaces
+
+echo "Kubernetes local cluster setup complete!"
