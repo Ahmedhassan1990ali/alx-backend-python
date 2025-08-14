@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Deploy both versions
+echo "Deploying blue and green versions..."
+kubectl apply -f blue_deployment.yaml
+kubectl apply -f green_deployment.yaml
+kubectl apply -f kubeservice.yaml
+
+# Check deployments
+echo -e "\nCurrent deployments:"
+kubectl get deployments
+
+# Check green version logs
+echo -e "\nChecking green version logs for errors..."
+GREEN_POD=$(kubectl get pods -l version=green -o jsonpath='{.items[0].metadata.name}')
+kubectl logs $GREEN_POD | grep -i error
+
+# Traffic switching function
+switch_traffic() {
+  echo -e "\nSwitching traffic to $1 version..."
+  kubectl patch service django-main-service -p "{\"spec\":{\"selector\":{\"version\":\"$1\"}}}"
+  echo "Traffic now routed to $1 version"
+}
+
+# Usage instructions
+echo -e "\nTo switch traffic:"
+echo "  ./kubctl-0x02 --switch-to green"
+echo "  ./kubctl-0x02 --switch-to blue"
+
+# Handle traffic switching if requested
+if [[ $1 == "--switch-to" ]]; then
+  if [[ $2 == "green" || $2 == "blue" ]]; then
+    switch_traffic $2
+  else
+    echo "Invalid version. Use 'green' or 'blue'"
+  fi
+fi
