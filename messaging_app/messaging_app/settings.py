@@ -77,17 +77,33 @@ WSGI_APPLICATION = 'messaging_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# import os
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.environ.get('MYSQL_DATABASE', 'messaging_db'),
+#         'USER': os.environ.get('MYSQL_USER', 'app_user'),
+#         'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'secure_password_123'),
+#         'HOST': os.environ.get('DJANGO_DB_HOST', 'db'),
+#         'PORT': '3306',
+#     }
+# }
+# Import os to read environment variables
 import os
+
+# Database settings
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('MYSQL_DATABASE', 'messaging_db'),
-        'USER': os.environ.get('MYSQL_USER', 'app_user'),
-        'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'secure_password_123'),
-        'HOST': os.environ.get('DJANGO_DB_HOST', 'db'),
-        'PORT': '3306',
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.environ.get('DB_NAME', 'db.sqlite3'),
+        'USER': os.environ.get('DB_USER', ''),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', ''),
+        'PORT': os.environ.get('DB_PORT', ''),
     }
 }
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key-for-dev-only')
 
 
 # Password validation
