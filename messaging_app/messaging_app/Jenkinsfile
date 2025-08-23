@@ -6,6 +6,12 @@ pipeline {
         python "System-Python-3"
     }
 
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKER_IMAGE = 'Ahmedhassan1990ali/messaging-app'
+        DOCKER_TAG = "build-${env.BUILD_ID}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -41,5 +47,36 @@ pipeline {
                 junit 'messaging_app/test-report.xml'
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image, tagging it with both 'latest' and the build number
+                    docker.build("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}")
+                    // Also tag it as 'latest' for convenience
+                    docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push('latest')
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Log in to Docker Hub using the credentials from the environment
+                    sh "echo ${env.DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${env.DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+                    // Push both tags to Docker Hub
+                    docker.image("${env.DOCKER_IMAGE}:${env.DOCKER_TAG}").push()
+                    docker.image("${env.DOCKER_IMAGE}:latest").push()
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Always log out from Docker Hub to clean up, even if the build fails
+            sh 'docker logout'
+        }
     }
 }
+
