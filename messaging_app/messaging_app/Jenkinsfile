@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    tools {
+        // Uses the Python installation we configured in Jenkins Global Tools
+        python "System-Python-3"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Step 1: Pull the code from GitHub.
+                git branch: 'main',
+                    credentialsId: 'github-credentials',
+                    url: 'https://github.com/Ahmedhassan1990ali/alx-backend-python.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                // Step 2: Navigate to the correct directory and install dependencies from requirements.txt
+                dir('messaging_app') {
+                    sh 'pip3 install -r messaging_app/requirements.txt'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Step 3: Run tests with pytest
+                dir('messaging_app') {
+                    sh 'python -m pytest tests/ -v --junitxml=test-report.xml'
+                }
+                // --junitxml creates a report in a format Jenkins understands
+            }
+        }
+
+        stage('Report') {
+            steps {
+                // Step 4: Publish the test report to Jenkins
+                junit 'messaging_app/test-report.xml'
+            }
+        }
+    }
+}
